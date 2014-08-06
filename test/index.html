@@ -10,10 +10,10 @@
     <script src="hammer.js"></script>
     <script src="../jquery.hammerv2.js"></script>
     <script>
-        $("div").on("click", function(){console.log("click", arguments);})
-        $("div").on("tap", function(){console.log("tap", arguments);});
+        // $("div").on("click", function(){console.log("click", arguments);})
+        $("div").on("tap", function(){console.log("tap", arguments);window.jj = arguments[0];});
         // $("div").off("tap", function(){console.log("tap", arguments);});
-        $("div").on("pan", function(){console.log("pan", arguments);});
+        // $("div").on("pan", function(){console.log("pan", arguments);});
         $("div").on("swipe", function(){console.log("swipe", arguments);});
         $("div").on("pinch", function(){console.log("pinch", arguments);});
         $("div").on("rotate", function(){console.log("rotate", arguments);});

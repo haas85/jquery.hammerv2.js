@@ -5,11 +5,12 @@
     EVENTS += "pinch,pinchstart,pinchmove,pinchend,pinchcancel,pinchin,pinchout,";
     EVENTS += "rotate,rotatestart,rotatemove,rotateend,rotatecancel";
 
-    $.fn.originalOn = $.fn.on;
-    $.fn.originalOff = $.fn.off;
+    $.fn.srcOn = $.fn.on;
+    $.fn.srcOff = $.fn.off;
+    $.fn.srcTrigger = $.fn.trigger;
 
-    $.fn.on = function(event, selector, data, callback, one){
-    var autoRemove, delegator, $this = this;
+    $.fn.on = function(event, selector, data, callback, one, options){
+    var $this = this;
     if (event && !(typeof(event) == 'string')) {
       $.each(event, function(type, fn){
         $this.on(type, selector, data, fn, one);
@@ -17,19 +18,28 @@
       return $this;
     }
     if (!(typeof(selector) == 'string') && !(typeof(callback) == "function") && callback !== false)
-      callback = data, data = selector, selector = undefined
+      options = callback, callback = data, data = selector, selector = undefined
     if ((typeof(data) == "function") || data === false)
-      callback = data, data = undefined
+      options = callback, callback = data, data = undefined
 
     if (callback === false) callback = function(){return false;};
+    if(!options){options = {};}
 
     if(EVENTS.indexOf(event) != -1){
         if(this[0].hammer == null){
             this[0].hammer = new Hammer(this[0]);
         }
+        this[0].hammer.set(options);
+        if(one){
+          _callback = callback;
+          callback = function(){
+            $this.off(event);
+            _callback.apply(_callback, arguments);
+          };
+        }
         this[0].hammer.on(event, callback);
     }else{
-        $this.originalOn(event, selector, data, callback, one);
+        $this.srcOn(event, selector, data, callback, one);
     }
     return $this;
   };
@@ -42,12 +52,36 @@
       return $this;
     }
 
+    if (!(typeof(selector) == 'string') && !(typeof(callback) == "function") && callback !== false)
+      callback = selector, selector = undefined
+
+    if (callback === false) callback = function(){return false;};
+
     if(EVENTS.indexOf(event) != -1){
-        this[0].hammer.off(event);
+        this[0].hammer.off(event, callback);
     }else{
-        $this.originalOff(event, selector, callback);
+        $this.srcOff(event, selector, callback);
     }
+    return $this;
   };
+
+  $.fn.trigger = function(event, args){
+    if(args == null){args = {};};
+    if(EVENTS.indexOf(event) != -1){
+      this[0].hammer.emit(event, args);
+    }else{
+      this.srcTrigger(event, args);
+    }
+    return this;
+  };
+
+  $.fn.one = function(event, selector, data, callback, options){
+    return this.on(event, selector, data, callback, 1, options)
+  }
+
+  $.fn.bind = function(event, data, callback, options){
+    return this.on(event, data, callback, options)
+  }
 })();
 
 
